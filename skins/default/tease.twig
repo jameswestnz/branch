@@ -1,0 +1,16 @@
+<article class="tease tease-{{post.post_type}}" id="tease-{{post.ID}}">
+	{% block content %}
+		<div class="col-md-12">
+			<a href="{{post.link}}">
+			{% if post.thumbnail.src %}
+				<img src="{{post.thumbnail.src}}" alt="Image: {{post.title}}" class="img-responsive center-block">
+			{% else %}
+				<img src="http://placehold.it/800x250&text={{post.title}}" alt="Image: {{post.title}}" class="img-responsive center-block">
+			{% endif %}
+			</a>
+			
+			<h2 class="h2"><a href="{{post.link}}">{{post.title}}</a></h2>
+			<p>{{post.get_preview}}</p>
+		</div>
+	{% endblock %}
+</article>
