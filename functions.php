@@ -86,53 +86,6 @@ if ( class_exists( 'WPSEO_Breadcrumbs' ) ) {
 	}
 }
 
-class BranchEditor {
-	public function __construct() {
-		add_action('init', array($this, 'register_post_type'));
-		add_action('add_meta_boxes', array($this, 'add_metaboxes'));
-		add_action('admin_enqueue_scripts', array($this, 'load_scripts'));
-	}
-	
-	public function load_scripts() {
-		wp_enqueue_script( 'ace', '/wp-content/themes/branch/lib/ace/ace.js', false );
-	}
-	
-	public function register_post_type() {
-		register_post_type('branch_files', array(
-			'labels' => array(
-                'name' => __( 'Branch Files' ),
-                'singular_name' => __( 'Branch File' )
-            ),
-			'public'             => false,
-			'publicly_queryable' => false,
-			'show_ui'            => true,
-			'show_in_menu'       => true,
-			'query_var'          => true,
-			'has_archive'        => false,
-			'hierarchical'       => false,
-			'menu_position'      => null,
-			'supports'			 => array('title', 'revisions')
-		));
-	}
-	
-	public function add_metaboxes() {
-		add_meta_box('branch_files_content', 'Content', array($this, 'branch_files_content'), 'branch_files', 'normal', 'default');
-	}
-	
-	public function branch_files_content() {
-		global $post;
-	
-		// Noncename needed to verify where the data originated
-		echo '<input type="hidden" name="branchfilemeta_noncename" id="branchfilemeta_noncename" value="' . wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
-		
-		$html = '<textarea style="width: 100%; position: relative; height: 500px;" class="wp-editor-area" autocomplete="off" cols="100" rows="100" name="content" id="content">'.$post->post_content.'</textarea>';
-		$html .= '<script>var editor = ace.edit("content");editor.setTheme("ace/theme/twilight");</script>';
-		
-		// Echo out the field
-		echo $html;
-	}
-}
-
 // Theme class
 class BranchSite extends TimberSite {
 
@@ -165,9 +118,6 @@ class BranchSite extends TimberSite {
 		add_action('init', array($this, 'register_post_types'));
 		add_action('init', array($this, 'register_taxonomies'));
 		add_action('widgets_init', array($this, 'register_sidebars'));
-		
-		// BranchEditor
-		new BranchEditor();
 		
 		parent::__construct();
 	}
