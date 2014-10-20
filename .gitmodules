@@ -1,0 +1,3 @@
+[submodule "skins/default"]
+	path = skins/default
+	url = https://github.com/jameswestnz/branch-skin.git
