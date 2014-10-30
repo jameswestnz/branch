@@ -19,6 +19,7 @@ $branch_includes = array(
   'lib/twig.php',
   'lib/skin.php',
   'lib/breadcrumbs.php',
+  'lib/customize.php',
   'lib/site.php',
 );
 

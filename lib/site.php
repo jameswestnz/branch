@@ -18,7 +18,14 @@ class BranchSite extends TimberSite {
         add_action('twig_apply_filters', array($branchTwig, 'add_twig_filters'));
         
         // set skin
-        $this->skin = new BranchSkin('default');
+        if(isset($_POST['customized'])) {
+        	$customized = json_decode(stripslashes(html_entity_decode($_POST['customized'])));
+        	$skin_name = $customized->skin;
+        } else {
+	        $skin_name = get_theme_mod('skin', 'default');
+        }
+        
+        $this->skin = new BranchSkin($skin_name);
 	
 		// add theme support etc
 		add_theme_support('post-formats');
@@ -30,6 +37,16 @@ class BranchSite extends TimberSite {
 		add_action('init', array($this, 'register_post_types'));
 		add_action('init', array($this, 'register_taxonomies'));
 		add_action('widgets_init', array($this, 'register_sidebars'));
+		
+		// customize
+		// Setup the Theme Customizer settings and controls...
+		add_action( 'customize_register' , array( 'BranchCustomize' , 'register' ) );
+		
+		// Output custom CSS to live site
+		add_action( 'wp_head' , array( 'BranchCustomize' , 'header_output' ) );
+		
+		// Enqueue live preview javascript in Theme Customizer admin screen
+		add_action( 'customize_preview_init' , array( 'BranchCustomize' , 'live_preview' ) );
 		
 		parent::__construct();
 	}
