@@ -6,6 +6,21 @@
  * @since branch 1.0
  */
 class BranchCustomize {
+	static function branch($site) {
+		$site->customize = new self();
+	}
+	
+	public function __construct() {
+		// Setup the Theme Customizer settings and controls...
+		add_action( 'customize_register' , array( $this , 'register' ) );
+		
+		// Output custom CSS to live site
+		add_action( 'wp_head' , array( $this , 'header_output' ) );
+		
+		// Enqueue live preview javascript in Theme Customizer admin screen
+		add_action( 'customize_preview_init' , array( $this , 'live_preview' ) );
+	}
+
    /**
 	* This hooks into 'customize_register' (available as of WP 3.4) and allows
 	* you to add new sections and controls to the Theme Customize screen.
@@ -20,9 +35,9 @@ class BranchCustomize {
 	*/
    public static function register( $wp_customize ) {
 	  //1. Define a new section (if desired) to the Theme Customizer
-	  $wp_customize->add_section( 'branch_options', 
+	  $wp_customize->add_section( 'branch_skins', 
 		 array(
-			'title' => __( 'General', 'branch' ), //Visible title of section
+			'title' => __( 'Skin Selection', 'branch' ), //Visible title of section
 			'priority' => 0, //Determines what order this appears in
 			'capability' => 'edit_theme_options', //Capability needed to tweak
 			//'description' => __('Allows you to customize some example settings for branch.', 'branch'), //Descriptive tooltip
@@ -48,8 +63,8 @@ class BranchCustomize {
 		    'skin',
 		    array(
 		        'type' => 'select',
-		        'label' => 'Theme skin:',
-		        'section' => 'branch_options',
+		        //'label' => 'Theme skin:',
+		        'section' => 'branch_skins',
 		        'choices' => $options,
 		    )
 		);
@@ -131,3 +146,6 @@ class BranchCustomize {
 	  return $return;
 	}
 }
+
+// bind to BranchSite
+add_action('branch_construct', array('BranchCustomize', 'branch'), 10);
