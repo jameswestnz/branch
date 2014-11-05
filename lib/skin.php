@@ -13,16 +13,26 @@ class BranchSkin {
 		'/uploads/branch/skins'
 	);
 	
-	public function __construct($name='default') {
+	public function __construct() {
+        $name = 'default';
+        if(isset($_POST['customized'])) {
+        	$customized = json_decode(stripslashes(html_entity_decode($_POST['customized'])));
+        	
+        	if(isset($customized->skin)) {
+        		$name = $customized->skin;
+        	}
+        }
+        $name = get_theme_mod('skin', $name);
+	
 		// set name, as passed in contructor
 		$this->name = $name;
+		
+		// get the current theme
+		$theme = wp_get_theme();
 		
 		// could be more dynamic - this assume that the skin resides in the current themes directory, which is not true for branch.
 		// deprecate this - not smart
 		$this->link = site_url("wp-content/themes/{$theme->stylesheet}/skins/".$name);
-		
-		// get the current theme
-		$theme = wp_get_theme();
 		
 		// define possible skin paths
         $this->add_skin_path("/themes/{$theme->get('Template')}/skins");
@@ -191,3 +201,8 @@ class BranchSkin {
 		return $paths;
 	}
 }
+
+// bind to BranchSite
+add_action('branch_construct', function($site){
+	$site->skin = new BranchSkin();
+}, 10);
