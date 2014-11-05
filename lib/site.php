@@ -1,13 +1,26 @@
 <?php
 class BranchSite extends TimberSite {
-
+	/**
+	 * includes
+	 *
+	 * The $includes array determines the code library included in your theme.
+	 * Add or remove files to the array as needed. Supports child theme overrides.
+	 *
+	 * Please note that missing files will produce a fatal error.
+	 */
 	var $includes = array(
-		'lib/twig.php',           // Custom Twig class
+		'lib/twig.php',
+		'lib/skin.php',
+		'lib/breadcrumbs.php',
+		'lib/customize.php'
 	);
 
 	function __construct(){
 		//include libs
-		self::include_libs();
+		$this->include_libs();
+		
+		// `branch_construct` allows libs to self-initiate to the current class
+		do_action('branch_construct', $this);
 		
 		// setup timber/twig
 		$branchTwig = new BranchTwig();
@@ -16,37 +29,25 @@ class BranchSite extends TimberSite {
         
         // add custom twig_apply_filters
         add_action('twig_apply_filters', array($branchTwig, 'add_twig_filters'));
-        
-        // set skin
-        if(isset($_POST['customized'])) {
-        	$customized = json_decode(stripslashes(html_entity_decode($_POST['customized'])));
-        	$skin_name = $customized->skin;
-        } else {
-	        $skin_name = get_theme_mod('skin', 'default');
-        }
-        
-        $this->skin = new BranchSkin($skin_name);
 	
 		// add theme support etc
 		add_theme_support('post-formats');
 		add_theme_support('post-thumbnails');
 		add_theme_support('menus');
+		
+		// filters & actions
+		// post types registration
+		add_action('init', array($this, 'register_post_types'));
+		
+		// taxonomy registration
+		add_action('init', array($this, 'register_taxonomies'));
+		
+		// Timber/Twig functions
 		add_filter('timber_context', array($this, 'add_to_context'));
 		add_filter('get_twig', array($this, 'add_to_twig'));
+		
+		// disable Timber updates
 		add_filter('site_transient_update_plugins', array($this, 'disable_timber_updates'));
-		add_action('init', array($this, 'register_post_types'));
-		add_action('init', array($this, 'register_taxonomies'));
-		add_action('widgets_init', array($this, 'register_sidebars'));
-		
-		// customize
-		// Setup the Theme Customizer settings and controls...
-		add_action( 'customize_register' , array( 'BranchCustomize' , 'register' ) );
-		
-		// Output custom CSS to live site
-		add_action( 'wp_head' , array( 'BranchCustomize' , 'header_output' ) );
-		
-		// Enqueue live preview javascript in Theme Customizer admin screen
-		add_action( 'customize_preview_init' , array( 'BranchCustomize' , 'live_preview' ) );
 		
 		parent::__construct();
 	}
@@ -137,7 +138,8 @@ class BranchSite extends TimberSite {
 			'current_user_can',
 			'get_edit_comment_link',
 			'is_home',
-			'is_front_page'
+			'is_front_page',
+			'get_theme_mod'
 		);
 		
 		foreach($auto_add_functions as $name) {
@@ -169,23 +171,11 @@ class BranchSite extends TimberSite {
 			$post = $current_post;
 			return $post;
         }));
-
         
 		$twig->addFunction(new Twig_SimpleFunction('get_asset_uri', function ($uri) {
 			return BranchSkin::get_asset_uri($uri);
         }));
         
 		return $twig;
-	}
-
-	function register_sidebars() {
-		register_sidebar(array(
-			'name'          => __('Primary'),
-			'id'            => 'sidebar-primary',
-			'before_widget' => '<section class="widget %1$s %2$s">',
-			'after_widget'  => '</section>',
-			'before_title'  => '<h3>',
-			'after_title'   => '</h3>',
-		));
 	}
 }
