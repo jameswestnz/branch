@@ -1,67 +1,64 @@
 <?php
 
 class BranchSkin {
-	public $name = 'default';
-	public $link = '/wp-content/themes/branch/skins/default';
-	
-	public $paths = array();
-	
-	/* $skin_paths
-	 * lowest order first
-	 */
-	public $skin_paths = array(
-		'/uploads/branch/skins'
-	);
-	
 	public function __construct() {
-        $name = 'default';
-        if(isset($_POST['customized'])) {
-        	$customized = json_decode(stripslashes(html_entity_decode($_POST['customized'])));
-        	
-        	if(isset($customized->skin)) {
-        		$name = $customized->skin;
-        	}
-        }
-        $name = get_theme_mod('skin', $name);
-	
-		// set name, as passed in contructor
-		$this->name = $name;
-		
 		// get the current theme
 		$theme = wp_get_theme();
-		
-		// could be more dynamic - this assume that the skin resides in the current themes directory, which is not true for branch.
-		// deprecate this - not smart
-		$this->link = site_url("wp-content/themes/{$theme->stylesheet}/skins/".$name);
-		
-		// define possible skin paths
-        $this->add_skin_path("/themes/{$theme->get('Template')}/skins");
-        $this->add_skin_path("/themes/{$theme->stylesheet}/skins");
 	
 		// load config
-		$this->config = $this->load_config();
+		$this->config();
+        
+        // CSS compiling
+        $this->css($this);
 		
-		if(!$this->config) throw new Exception('A skin must have a config file.');
+		// load customize class
+		$this->customize($this);
 		
 		// register skin sidebars
 		$this->register_sidebars();
 		
-        // set assets paths - must be relative to current theme directory
-        $this->add_asset_path("../../uploads/branch/skins/{$this->name}");
-        $this->add_asset_path("../{$theme->stylesheet}/skins/{$this->name}");
-        if(is_child_theme()) $this->add_asset_path("../{$theme->get('Template')}/skins/{$this->name}");
-        $this->add_asset_path("../{$theme->stylesheet}/skins/default");
-        if(is_child_theme()) $this->add_asset_path("../{$theme->get('Template')}/skins/default");
+		// add image sizes
+		$this->add_image_sizes();
         
-        // set timeber views
-        Timber::$dirname = array();
-        foreach($this->paths as $path) {
-	        Timber::$dirname[] = $path;
-        }
+        // set timber views
+        // user can upload twig files to /wp-content/branch/site to override/add to all skins, or twigs will be loaded from $this->path()
+        Timber::$dirname = array(
+	        $this->find_relative_path(WP_CONTENT_DIR . '/branch/site', $this->path()),
+			$this->find_relative_path($this->theme_path(), $this->path())
+        );
+        
+        // register actions & filters
+		add_action( 'init', array( $this, 'register_menu_locations' )); // skin menu locations
 		
 		return $this;
 	}
 	
+	/**
+	 * theme_path function.
+	 * 
+	 * @access private
+	 * @return void
+	 */
+	private function theme_path() {
+		$theme = wp_get_theme();
+		
+		if(!isset($this->theme_path)) {
+			if(is_child_theme()) {
+				$this->theme_path = WP_CONTENT_DIR . '/themes/' . $theme->get('Template');
+			} else {
+				$this->theme_path = WP_CONTENT_DIR . '/themes/' . $theme->stylesheet;
+			}
+		}
+		
+		return $this->theme_path;
+	}
+	
+	/**
+	 * register_sidebars function.
+	 * 
+	 * @access private
+	 * @return void
+	 */
 	private function register_sidebars() {
 		if(!isset($this->config['sidebars'])) return;
 	
@@ -84,102 +81,45 @@ class BranchSkin {
 		}
 	}
 	
-	private function load_config() {
-		$skin_paths = $this->get_skin_dirs($this->name);
-		
-		$config = null;
-	
-		foreach($skin_paths as $skin_path) {
-			$file = $skin_path . '/config';
-			if(file_exists($file)) {
-				$config = json_decode(file_get_contents($file), true);
-			}
-		}
-		
-		return $config;
-	}
-	
-	public function add_skin_path($path) {
-		if(!in_array($path, $this->skin_paths)) {
-			$this->skin_paths[] = $path;
-		}
-	}
-	
-	public function add_asset_path($path) {
-		if(!in_array($path, $this->paths)) {
-			$this->paths[] = $path;
-		}
-	}
-	
-	/*
-	 * get_asset_uri
+	/**
+	 * add_image_sizes function.
 	 * 
-	 * Determines the final asset URI based on the override order defined in __contruct()
-	 * Returns first match.
+	 * @access private
+	 * @return void
 	 */
-	public static function get_asset_uri($path) {
-		$theme = wp_get_theme();
-		foreach(Timber::$dirname as $dir) {
-			$levels = 0;
+	private function add_image_sizes() {
+		if(!isset($this->config['images']) || !isset($this->config['images']['sizes'])) return;
+	
+		foreach($this->config['images']['sizes'] as $size) {
+			if(!isset($size['id'])) continue;
 			
-			foreach(explode('../', $dir) as $parent) {
-				if($parent == '') $levels++;
-			}
+			$options = array(
+				$size['id'],
+				(isset($size['width'])) ? $size['width'] : null,
+				(isset($size['height'])) ? $size['height'] : null,
+				(isset($size['crop'])) ? $size['crop'] : null,
+			);
 			
-			$theme_dir = WP_CONTENT_DIR . "/themes/{$theme->stylesheet}";
-			
-			// remove levels
-			$theme_dir = explode('/', $theme_dir);
-			while($levels > 0) {
-				array_pop($theme_dir);
-				$levels--;
-			}
-			
-			$theme_dir = implode('/', $theme_dir) . '/';
-			$dir = str_replace('../', '', $dir);
-			
-			// final path & URI
-			$uri = '/' . str_replace(ABSPATH, '', $theme_dir . $dir) . $path;
-			$dir = realpath($theme_dir . $dir);
-			
-			$file = realpath($dir . $path);
-			
-			if(file_exists($file)) {
-				return $uri;
-			}
+			call_user_func_array('add_image_size', $options);
 		}
 	}
 	
-	/*
-	 * get_skins
+	/**
+	 * register_menu_locations function.
 	 * 
-	 * Retrieves all skins
+	 * @access public
+	 * @return void
 	 */
-	public static function get_skins() {
-		$skins = array();
+	public function register_menu_locations() {
+		if(!isset($this->config['menus']['locations'])) return;
 		
-		// duplicate of construct - however, this needs to be static. Another way to simplify?
-		$theme = wp_get_theme();
-		$skin_paths = array(
-			'/uploads/branch/skins',
-			"/themes/{$theme->get('Template')}/skins",
-			"/themes/{$theme->stylesheet}/skins"
-		);
+		$locations = array();
 		
-		foreach($skin_paths as $skin_path) {
-			$skin_path = WP_CONTENT_DIR . $skin_path;
-			$dirs = array_filter(glob($skin_path . '/*'), 'is_dir');
-		
-			foreach($dirs as $dir) {
-				$name = basename($dir);
-				$skins[$name] = array(
-					'name' => $name,
-					'path' => realpath($dir)
-				);
-			}
+		foreach($this->config['menus']['locations'] as $location) {
+			$locations[$location['id']] = __($location['name'], 'branch');
 		}
 		
-		return $skins;
+		register_nav_menus($locations);
 	}
 	
 	/*
@@ -189,7 +129,7 @@ class BranchSkin {
 	 *
 	 * Returns absolute paths - recursing up the tree may not work in symlinked environments
 	 */
-	public function get_skin_dirs($skin_name) {
+	private function get_skin_dirs($skin_name) {
 		$paths = array();
 		
 		foreach($this->skin_paths as $skin_path) {
@@ -200,9 +140,213 @@ class BranchSkin {
 		
 		return $paths;
 	}
+	
+	/**
+	 * name function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	public function name() {
+		if(!isset($this->name)) {
+			// load from database - we'll set to default if none exists
+			$name = get_theme_mod('skin', 'default');
+			
+			// now check if we've been passed a skin in $_POST['customized']
+	        if(isset($_POST['customized'])) {
+	        	$customized = json_decode(stripslashes(html_entity_decode($_POST['customized'])));
+	        	
+	        	// have we set a skin? Make sure it's not the same
+	        	if(isset($customized->skin) && $customized->skin != $name) {
+	        		$name = $customized->skin;
+	        	}
+	        }
+		
+			// set
+			$this->name = $name;
+		}
+		
+		return $this->name;
+	}
+	
+	/**
+	 * path function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	public function path() {
+		if(!isset($this->path)) {
+			// get the current theme
+			$theme = wp_get_theme();
+			
+			// check for skins outside of theme directories
+			if(file_exists(WP_CONTENT_DIR . "/branch/skins/{$this->name()}")) {
+				$this->path = WP_CONTENT_DIR . "/branch/skins/{$this->name()}";
+			}
+			
+			// check child theme directory
+			if(file_exists(WP_CONTENT_DIR . "/themes/{$theme->stylesheet}/skins/{$this->name()}")) {
+				$this->path = WP_CONTENT_DIR . "/themes/{$theme->stylesheet}/skins/{$this->name()}";
+			}
+			
+			// check parent theme directory
+			if(file_exists(WP_CONTENT_DIR . "/themes/{$theme->get('Template')}/skins/{$this->name()}")) {
+				$this->path = WP_CONTENT_DIR . "/themes/{$theme->get('Template')}/skins/{$this->name()}";
+			}
+		}
+		
+		return $this->path;
+	}
+	
+	/**
+	 * uri function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	public function uri() {
+		if(!isset($this->uri)) {
+			// get the current theme
+			$theme = wp_get_theme();
+			
+			// check for skins outside of theme directories
+			if(file_exists(WP_CONTENT_DIR . "/branch/skins/{$this->name()}")) {
+				$this->uri = WP_CONTENT_URL . "/branch/skins/{$this->name()}";
+			}
+			
+			// check child theme directory
+			if(file_exists(WP_CONTENT_DIR . "/themes/{$theme->stylesheet}/skins/{$this->name()}")) {
+				$this->uri = WP_CONTENT_URL . "/themes/{$theme->stylesheet}/skins/{$this->name()}";
+			}
+			
+			// check parent theme directory
+			if(file_exists(WP_CONTENT_DIR . "/themes/{$theme->get('Template')}/skins/{$this->name()}")) {
+				$this->uri = WP_CONTENT_URL . "/themes/{$theme->get('Template')}/skins/{$this->name()}";
+			}
+		}
+		
+		return $this->uri;
+	}
+	
+	
+	/**
+	 * skins function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	public function skins() {
+		if(!isset($this->skins)) {
+			$theme = wp_get_theme();
+			
+			$skin_paths = array(
+				'/branch/skins',
+				'/themes/' . $theme->get('Template') . '/skins',
+				'/themes/' . $theme->stylesheet . '/skins'
+			);
+			
+			$skins = array();
+			
+			foreach($skin_paths as $skin_path) {
+				$skin_path = WP_CONTENT_DIR . $skin_path;
+				$dirs = array_filter(glob($skin_path . '/*'), 'is_dir');
+			
+				foreach($dirs as $dir) {
+					$name = basename($dir);
+					$skins[$name] = array(
+						'name' => $name,
+						'path' => realpath($dir)
+					);
+				}
+			}
+			
+			$this->skins = $skins;
+		}
+		
+		return $this->skins;
+	}
+	
+	/**
+	 * config function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	public function config() {
+		if(!isset($this->config)) {
+			$file = $this->path() . '/config.json';
+			if(file_exists($file)) {
+				$this->config = json_decode(file_get_contents($file), true);
+			} else {
+				throw new Exception('A skin must have a config file.');
+			}
+		}
+		
+		return $this->config;
+	}
+	
+	/**
+	 * customize function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	public function customize() {
+		if(!isset($this->customize)) {
+			$this->customize = new BranchCustomize($this);
+		}
+		
+		return $this->customize;
+	}
+	
+	/**
+	 * css function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	public function css() {
+		if(!isset($this->css)) {
+			$this->css = new BranchCSS($this);
+		}
+		
+		return $this->css;
+	}
+	
+	/**
+	 * 
+	 * Find the relative file system path between two file system paths
+	 *
+	 * @param  string  $frompath  Path to start from
+	 * @param  string  $topath    Path we want to end up in
+	 *
+	 * @return string             Path leading from $frompath to $topath
+	 */
+	private function find_relative_path( $frompath, $topath ) {
+	    $from = explode( DIRECTORY_SEPARATOR, $frompath ); // Folders/File
+	    $to = explode( DIRECTORY_SEPARATOR, $topath ); // Folders/File
+	    $relpath = '';
+	 
+	    $i = 0;
+	    // Find how far the path is the same
+	    while ( isset($from[$i]) && isset($to[$i]) ) {
+	        if ( $from[$i] != $to[$i] ) break;
+	        $i++;
+	    }
+	    $j = count( $from ) - 1;
+	    // Add '..' until the path is the same
+	    while ( $i <= $j ) {
+	        if ( !empty($from[$j]) ) $relpath .= '..'.DIRECTORY_SEPARATOR;
+	        $j--;
+	    }
+	    // Go to folder from where it starts differing
+	    while ( isset($to[$i]) ) {
+	        if ( !empty($to[$i]) ) $relpath .= $to[$i].DIRECTORY_SEPARATOR;
+	        $i++;
+	    }
+	    
+	    // Strip last separator
+	    return substr($relpath, 0, -1);
+	}
 }
-
-// bind to BranchSite
-add_action('branch_construct', function($site){
-	$site->skin = new BranchSkin();
-}, 10);
