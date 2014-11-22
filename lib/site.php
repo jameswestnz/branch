@@ -11,16 +11,19 @@ class BranchSite extends TimberSite {
 	var $includes = array(
 		'lib/twig.php',
 		'lib/skin.php',
+		'lib/css.php',
 		'lib/breadcrumbs.php',
-		'lib/customize.php'
+		'lib/customize.php',
+		'lib/shortcodes.php',
+		'vendor/wp-less/bootstrap-for-theme.php'
 	);
 
 	function __construct(){
 		//include libs
 		$this->include_libs();
 		
-		// `branch_construct` allows libs to self-initiate to the current class
-		do_action('branch_construct', $this);
+		// load skin
+		$this->skin();
 		
 		// setup timber/twig
 		$branchTwig = new BranchTwig();
@@ -34,6 +37,12 @@ class BranchSite extends TimberSite {
 		add_theme_support('post-formats');
 		add_theme_support('post-thumbnails');
 		add_theme_support('menus');
+		
+		add_action('init', function(){
+			register_nav_menus(array(
+				'primary' => __('Primary', 'branch')
+			));
+		});
 		
 		// filters & actions
 		// post types registration
@@ -85,7 +94,6 @@ class BranchSite extends TimberSite {
 
 	function add_to_context($context){
 		global $user_identity;
-		$context['menu'] = new TimberMenu();
 		$context['site'] = $this;
 		$context['user_identity'] = $user_identity;
 		
@@ -139,7 +147,8 @@ class BranchSite extends TimberSite {
 			'get_edit_comment_link',
 			'is_home',
 			'is_front_page',
-			'get_theme_mod'
+			'get_theme_mod',
+			'bloginfo'
 		);
 		
 		foreach($auto_add_functions as $name) {
@@ -173,9 +182,21 @@ class BranchSite extends TimberSite {
         }));
         
 		$twig->addFunction(new Twig_SimpleFunction('get_asset_uri', function ($uri) {
-			return BranchSkin::get_asset_uri($uri);
+			return $this->skin()->uri() . $uri;
+        }));
+        
+		$twig->addFunction(new Twig_SimpleFunction('get_menu', function ($location) {
+			return new TimberMenu($location);
         }));
         
 		return $twig;
+	}
+	
+	private function skin() {
+		if(!isset($this->skin)) {
+			$this->skin = new BranchSkin();
+		}
+		
+		return $this->skin;
 	}
 }
