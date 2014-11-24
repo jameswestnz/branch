@@ -4,6 +4,6 @@
 [submodule "lib/vendor/oncletom/wp-less"]
 	path = lib/vendor/oncletom/wp-less
 	url = https://github.com/oncletom/wp-less.git
-[submodule "vendor/oyejorge/wp-less"]
-        path = vendor/oyejorge/wp-less
-        url = https://github.com/oyejorge/less.php.git
+[submodule "lib/vendor/oyejorge/less.php"]
+	path = lib/vendor/oyejorge/less.php
+	url = https://github.com/oyejorge/less.php.git
