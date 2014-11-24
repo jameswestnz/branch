@@ -67,6 +67,12 @@ class Site extends \Branch\Singleton {
 		
 		// disable Timber updates
 		add_filter('site_transient_update_plugins', array($this, 'disable_timber_updates'));
+		
+		// enable timber caching
+		if (!WP_DEBUG){
+			$cache = apply_filters('branch_cache', true);
+		    \Timber::$cache = $cache;
+		}
 	}
 	
 	// can't have the timber plugin updated without us being aware of it
