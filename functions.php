@@ -7,29 +7,15 @@ if (!class_exists('Timber')){
 	return;
 }
 
-/**
- * includes
- *
- * The $branch_includes array determines the code library included in your theme.
- * Add or remove files to the array as needed. Supports child theme overrides.
- *
- * Please note that missing files will produce a fatal error.
- */
-$branch_includes = array(
-  'lib/twig.php',
-  'lib/skin.php',
-  'lib/breadcrumbs.php',
-  'lib/site.php',
-);
-
-foreach ($branch_includes as $file) {
-  if (!$filepath = locate_template($file)) {
-    trigger_error(sprintf(__('Error locating %s for inclusion', 'branch'), $file), E_USER_ERROR);
-  }
-
-  require_once $filepath;
+// check for site class
+$site_path = 'lib/site.php';
+if (!$filepath = locate_template($site_path)) {
+	trigger_error(sprintf(__('Error locating %s for inclusion'), $site_path), E_USER_ERROR);
 }
-unset($file, $filepath);
+require_once $filepath;
 
 // contruct theme class
-new BranchSite();
+add_action('branch', array('Branch\Site', 'instance'), 10);
+
+// fire as an action so it can be unregistered and overridden
+do_action('branch');

@@ -1,6 +1,8 @@
 <?php
+namespace Branch;
+
 if ( class_exists( 'WPSEO_Breadcrumbs' ) ) {
-	class BranchBreadcrumbs {
+	class Breadcrumbs extends \Branch\Singleton {
 		/**
 		 * @var	object	Instance of this class
 		 */
