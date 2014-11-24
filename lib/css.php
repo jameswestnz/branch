@@ -1,5 +1,7 @@
 <?php
-class BranchCSS {
+namespace Branch;
+
+class CSS extends \Branch\Singleton {
 	private $variables = array();
 	
 	public function __construct($skin) {
@@ -7,6 +9,11 @@ class BranchCSS {
 		$this->skin = $skin;
         
         add_action('init', array( $this, 'enqueue' ) );
+        
+        // change compiler
+        add_filter('wp_less_compiler', function() {
+	        return 'less.php';
+        });
 		
         // TODO: setup garbage collector
         //$this->compiler()->install();
@@ -14,12 +21,8 @@ class BranchCSS {
 	}
 	
 	public function compiler() {
-		/*add_filter('wp_less_compiler', function(){
-			return 'less.php';
-		});*/
-		
 		if(!isset($this->compiler)) {
-			$this->compiler = WPLessPlugin::getInstance();
+			$this->compiler = \WPLessPlugin::getInstance();
 		}
 		
 		return $this->compiler;
@@ -90,7 +93,13 @@ class BranchCSS {
 					}
 					
 					if(isset($field['css']) && $field['css'] === true && $id != '' && $value != '') {
-						$vars[$id] = $value;
+						if($field['type'] == 'font') {
+							$parts = json_decode(str_replace('\'' , '"', $value));
+							$vars[$id . '_name'] = '"' . $parts[0] . '"';
+							$vars[$id . '_url'] = '"' . $parts[1] . '"';
+						} else {
+							$vars[$id] = $value;
+						}
 					}
 				}
 			}
