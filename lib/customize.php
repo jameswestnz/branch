@@ -78,6 +78,17 @@ class Customize extends \Branch\Singleton {
 		
 		if(isset($config['customize']) && isset($config['customize']['sections']) && !empty($config['customize']['sections'])) {
 			$skin_customize = $config['customize'];
+			
+			$fonts = array();
+			
+			if(isset($config['fonts']) && !empty($config['fonts'])) {
+				foreach($config['fonts'] as $font) {
+					if(!isset($font['id']) || !isset($font['name'])) continue;
+					
+					$fonts[$font['id']] = $font['name'];
+				}
+			}
+			
 			foreach($skin_customize['sections'] as $key => $section) {
 				$wp_customize->add_section( $section['id'], 
 					array(
@@ -113,7 +124,7 @@ class Customize extends \Branch\Singleton {
 							
 							case 'color':
 								$wp_customize->add_control(
-									new WP_Customize_Color_Control(
+									new \WP_Customize_Color_Control(
 										$wp_customize,
 										$field['id'],
 										array(
@@ -126,7 +137,7 @@ class Customize extends \Branch\Singleton {
 							
 							case 'image':
 								$wp_customize->add_control(
-									new WP_Customize_Image_Control(
+									new \WP_Customize_Image_Control(
 										$wp_customize,
 										$field['id'],
 										array(
@@ -144,7 +155,7 @@ class Customize extends \Branch\Singleton {
 										'label'      => __( $field['label'], 'branch' ),
 										'section'    => $section['id'],
 										'type'       => 'select',
-										'choices'    => $field['choices']
+										'choices'    => $fonts
 									)
 								);
 							break;

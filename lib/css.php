@@ -70,15 +70,25 @@ class CSS extends \Branch\Singleton {
 	
 	private function add_customizer_variables() {
 		if(!isset($this->skin->config()['customize']) || !isset($this->skin->config()['customize']['sections'])) return;
+			
+		$fonts = array();
+		
+		if(isset($this->skin->config()['fonts']) && !empty($this->skin->config()['fonts'])) {
+			foreach($this->skin->config()['fonts'] as $font) {
+				if(!isset($font['id']) || !isset($font['name'])) continue;
+				
+				$fonts[$font['id']] = $font;
+			}
+		}
 		
 		$vars = array();
 		
 		foreach($this->skin->config()['customize']['sections'] as $section) {
 			if(isset($section['fields'])) {
 				foreach($section['fields'] as $field) {
-					if(!isset($field['id']) || !isset($field['default'])) continue;
+					if(!isset($field['id']) || !isset($field['default']) || !isset($field['type']) || !isset($field['css']) || $field['css'] !== true) continue;
 					
-					$id = preg_replace('/[^a-zA-Z\_]+/', '', str_replace('-', '_', $field['id']));
+					$key = preg_replace('/[^a-zA-Z\_]+/', '', str_replace('-', '_', $field['id']));
 					
 					$value = get_theme_mod($field['id'], $field['default']);
 					
@@ -96,13 +106,21 @@ class CSS extends \Branch\Singleton {
 						$value = $field['default'];
 					}
 					
-					if(isset($field['css']) && $field['css'] === true && $id != '' && $value != '') {
-						if($field['type'] == 'font') {
-							$parts = json_decode(str_replace('\'' , '"', $value));
-							$vars[$id . '_name'] = '"' . $parts[0] . '"';
-							$vars[$id . '_url'] = '"' . $parts[1] . '"';
-						} else {
-							$vars[$id] = $value;
+					if($key != '' && $value != '') {
+						switch($field['type']) {
+							case 'font';
+								$name = isset($fonts[$value]['css_name']) ? $fonts[$value]['css_name'] : $fonts[$value]['name'];
+								
+								// set the font name variable
+								$vars[$key . '_name'] = '"' . $name . '"';
+								
+								// set the URI variable
+								if(isset($fonts[$value]['uri'])) $vars[$key . '_uri'] = '"' . $fonts[$value]['uri'] . '"';
+							break;
+							
+							default:
+								$vars[$key] = $value;
+							break;
 						}
 					}
 				}
