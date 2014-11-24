@@ -301,9 +301,9 @@ class Skin extends \Branch\Singleton {
 				$this->config = $config;
 			}
 			
-			// still nothing - need to throw an exception
+			// still nothing
 			if($this->config === null) {
-				throw new Exception('A skin must have a config file.');
+				$this->config = array();
 			}
 		}
 		
