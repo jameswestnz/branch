@@ -1,24 +1,14 @@
 <?php
 namespace Branch;
 
-// timbertwig override
 class Twig extends \Branch\Singleton {
-	// Before you do this...
-	// DO YOU REALLY NEED THIS FUNCTION IN THE VIEW???
-	// ...
-	// ...
-	// ...
-	// Really?
-	// Don't belive you...
-	// ...
-	// Surely it can go in your template's .php file?
-	// ...
-	// ok...
-	// But, let's be smart about this - instead of using function() (or fn()), maybe check the docs on how to create your own twig function
-	// or... allow the PHP function in this array:
-	private $allowed_php_functions = array(
-	);
 	
+	/**
+	 * __construct function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
 	public function __construct() {
 		// remove timber twig_apply_filters
         remove_all_actions('twig_apply_filters');
@@ -236,7 +226,9 @@ class Twig extends \Branch\Singleton {
     public function exec_function($function_name) {
     	$function_name = trim($function_name);
     	
-    	if(!in_array($function_name, $this->allowed_php_functions)) {
+    	$allowed = apply_filters('twig_allowed_php_functions', array());
+    	
+    	if(!in_array($function_name, $allowed)) {
 	    	return false;
     	}
     	
