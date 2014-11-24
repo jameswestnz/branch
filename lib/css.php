@@ -55,6 +55,10 @@ class CSS extends \Branch\Singleton {
 			));
 			
 			$this->compiler()->setVariables($this->variables);
+			
+			// ensure xdebug.max_nesting_level is high enough
+			ini_set('xdebug.max_nesting_level', 200);
+			
 			$this->compiler()->dispatch();
 		}
 	}
