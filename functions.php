@@ -15,9 +15,7 @@ if (!$filepath = locate_template($site_path)) {
 require_once $filepath;
 
 // contruct theme class
+add_action('branch', array('Branch\Site', 'instance'), 10);
+
 // fire as an action so it can be unregistered and overridden
 do_action('branch');
-
-add_action('branch', function(){
-	new BranchSite();
-}, 10);
