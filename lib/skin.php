@@ -1,6 +1,7 @@
 <?php
+namespace Branch;
 
-class BranchSkin {
+class Skin extends \Branch\Singleton {
 	public function __construct() {
 		// get the current theme
 		$theme = wp_get_theme();
@@ -22,7 +23,7 @@ class BranchSkin {
         
         // set timber views
         // user can upload twig files to /wp-content/branch/site to override/add to all skins, or twigs will be loaded from $this->path()
-        Timber::$dirname = array(
+        \Timber::$dirname = array(
 	        $this->find_relative_path(WP_CONTENT_DIR . '/branch/site', $this->path()),
 			$this->find_relative_path($this->theme_path(), $this->path())
         );
@@ -276,9 +277,32 @@ class BranchSkin {
 	public function config() {
 		if(!isset($this->config)) {
 			$file = $this->path() . '/config.json';
-			if(file_exists($file)) {
-				$this->config = json_decode(file_get_contents($file), true);
-			} else {
+			$option = 'skin_config_' . $this->name();
+			
+			$config = get_option($option, null);
+			
+			// if we have config in the database, we have a modified time, the config file exists, and was modified is less than or equal to the the database time; return the stored config
+			if($config !== null && isset($config['modified']) && file_exists($file) && filemtime($file) <= $config['modified']) {
+				$this->config = $config;
+			}
+			else
+			
+			// else, if we have not saved config, or modified was not set, or the file was modified recently; set and update database
+			if($config === null || !isset($config['modified']) || (file_exists($file) && filemtime($file) > $config['modified'])) {
+				if($this->config = json_decode(file_get_contents($file), true)) {
+					$this->config['modified'] = filemtime($file);
+					
+					update_option($option, $this->config);
+				}
+			}
+			
+			// if the config is still null, but we had config in the database, let's fall back to that
+			if($this->config === null && $config !== null) {
+				$this->config = $config;
+			}
+			
+			// still nothing - need to throw an exception
+			if($this->config === null) {
 				throw new Exception('A skin must have a config file.');
 			}
 		}
@@ -294,7 +318,7 @@ class BranchSkin {
 	 */
 	public function customize() {
 		if(!isset($this->customize)) {
-			$this->customize = new BranchCustomize($this);
+			$this->customize = \Branch\Customize::instance($this);
 		}
 		
 		return $this->customize;
@@ -308,7 +332,7 @@ class BranchSkin {
 	 */
 	public function css() {
 		if(!isset($this->css)) {
-			$this->css = new BranchCSS($this);
+			$this->css = \Branch\CSS::instance($this);
 		}
 		
 		return $this->css;
