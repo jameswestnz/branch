@@ -1,6 +1,9 @@
 [submodule "skins/default"]
 	path = skins/default
 	url = https://github.com/jameswestnz/branch-skin.git
-[submodule "vendor/wp-less"]
-	path = vendor/wp-less
+[submodule "lib/vendor/oncletom/wp-less"]
+	path = lib/vendor/oncletom/wp-less
 	url = https://github.com/oncletom/wp-less.git
+[submodule "vendor/oyejorge/wp-less"]
+        path = vendor/oyejorge/wp-less
+        url = https://github.com/oyejorge/less.php.git
