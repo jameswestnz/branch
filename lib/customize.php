@@ -1,11 +1,7 @@
 <?php
-/**
- * Contains methods for customizing the theme customization screen.
- * 
- * @link http://codex.wordpress.org/Theme_Customization_API
- * @since branch 1.0
- */
-class BranchCustomize {
+namespace Branch;
+
+class Customize extends \Branch\Singleton {
 	public function __construct($skin) {
 		// make skin available to future calls
 		$this->skin = $skin;
@@ -36,7 +32,7 @@ class BranchCustomize {
 		// now get skin fields
 		$wp_customize->add_panel( 'branch', 
 			array(
-				'title' => __( 'Skin Options', 'branch' ),
+				'title' => __( 'Appearance', 'branch' ),
 				'priority' => 2,
 				'capability' => 'edit_theme_options',
 			) 
@@ -78,9 +74,10 @@ class BranchCustomize {
 		// need to load in all skin controls so that all are accessible if the user changes skins
 		// would need to prefix all sections with the skin name to allow for showing/hiding on the fly
 		
-		$skin_customize = $this->skin->config()['customize'];
+		$config = $this->skin->config();
 		
-		if(isset($skin_customize['sections']) && !empty($skin_customize['sections'])) {
+		if(isset($config['customize']) && isset($config['customize']['sections']) && !empty($config['customize']['sections'])) {
+			$skin_customize = $config['customize'];
 			foreach($skin_customize['sections'] as $key => $section) {
 				$wp_customize->add_section( $section['id'], 
 					array(
@@ -136,6 +133,18 @@ class BranchCustomize {
 											'label'      => __( $field['label'], 'branch' ),
 											'section'    => $section['id'],
 										)
+									)
+								);
+							break;
+							
+							case 'font':
+								$wp_customize->add_control(
+									$field['id'],
+									array(
+										'label'      => __( $field['label'], 'branch' ),
+										'section'    => $section['id'],
+										'type'       => 'select',
+										'choices'    => $field['choices']
 									)
 								);
 							break;
