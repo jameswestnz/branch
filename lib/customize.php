@@ -101,7 +101,7 @@ class Customize extends \Branch\Singleton {
 				);
 				
 				if(isset($section['fields']) && !empty($section['fields'])) {
-					foreach($section['fields'] as $field) {
+					foreach($section['fields'] as $key => $field) {
 						$wp_customize->add_setting( $field['id'],
 							array(
 								'default' => @$field['default'],
@@ -118,6 +118,7 @@ class Customize extends \Branch\Singleton {
 									array(
 										'label'      => __( $field['label'], 'branch' ),
 										'section'    => $section['id'],
+										'priority'	 => $key
 									)
 								);
 							break;
@@ -129,7 +130,8 @@ class Customize extends \Branch\Singleton {
 										$field['id'],
 										array(
 											'label'      => __( $field['label'], 'branch' ),
-											'section'    => $section['id']
+											'section'    => $section['id'],
+											'priority'	 => $key
 										)
 									)
 								);
@@ -143,6 +145,7 @@ class Customize extends \Branch\Singleton {
 										array(
 											'label'      => __( $field['label'], 'branch' ),
 											'section'    => $section['id'],
+											'priority'	 => $key
 										)
 									)
 								);
@@ -155,7 +158,8 @@ class Customize extends \Branch\Singleton {
 										'label'      => __( $field['label'], 'branch' ),
 										'section'    => $section['id'],
 										'type'       => 'select',
-										'choices'    => $fonts
+										'choices'    => $fonts,
+										'priority'	 => $key
 									)
 								);
 							break;
