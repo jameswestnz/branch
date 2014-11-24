@@ -12,7 +12,7 @@ class CSS extends \Branch\Singleton {
         
         // change compiler
         add_filter('wp_less_compiler', function() {
-	        return 'less.php';
+	        return get_template_directory() . '/lib/vendor/oyejorge/less.php/lessc.inc.php';
         });
 		
         // TODO: setup garbage collector
