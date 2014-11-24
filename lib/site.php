@@ -13,6 +13,7 @@ class Site extends \Branch\Singleton {
 	 * Please note that missing files will produce a fatal error.
 	 */
 	private $includes = array(
+		'lib/vendor/jarednova/timber-library/timber.php',
 		'lib/twig.php',
 		'lib/skin.php',
 		'lib/css.php',

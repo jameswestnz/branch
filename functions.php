@@ -1,12 +1,4 @@
 <?php
-// Check for Timber Plugin
-if (!class_exists('Timber')){
-	add_action( 'admin_notices', function(){
-		echo '<div class="error"><p>Timber not activated. Make sure you activate the plugin in <a href="' . admin_url('plugins.php#timber') . '">' . admin_url('plugins.php') . '</a></p></div>';
-	});
-	return;
-}
-
 // check for site class
 $site_path = 'lib/site.php';
 if (!$filepath = locate_template($site_path)) {
