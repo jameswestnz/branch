@@ -11,6 +11,7 @@ class Twig extends \Branch\Singleton {
 	 */
 	public function __construct() {
 		// remove timber twig_apply_filters
+		$this->timber_twig = new \TimberTwig();
         remove_all_actions('twig_apply_filters');
         add_action('twig_apply_filters', array($this, 'add_twig_filters'));
 	}
@@ -42,23 +43,23 @@ class Twig extends \Branch\Singleton {
 
         /* other filters */
         $twig->addFilter('stripshortcodes', new \Twig_Filter_Function('strip_shortcodes'));
-        $twig->addFilter('array', new \Twig_Filter_Function(array('TimberTwig', 'to_array')));
-        $twig->addFilter('string', new \Twig_Filter_Function(array('TimberTwig', 'to_string')));
+        $twig->addFilter('array', new \Twig_Filter_Function(array($this->timber_twig, 'to_array')));
+        $twig->addFilter('string', new \Twig_Filter_Function(array($this->timber_twig, 'to_string')));
         $twig->addFilter('excerpt', new \Twig_Filter_Function('wp_trim_words'));
         $twig->addFilter('function', new \Twig_Filter_Function(array($this, 'exec_function')));
         $twig->addFilter('path', new \Twig_Filter_Function('twig_get_path'));
-        $twig->addFilter('pretags', new \Twig_Filter_Function(array('TimberTwig', 'twig_pretags')));
+        $twig->addFilter('pretags', new \Twig_Filter_Function(array($this->timber_twig, 'twig_pretags')));
         $twig->addFilter('sanitize', new \Twig_Filter_Function('sanitize_title'));
         $twig->addFilter('shortcodes', new \Twig_Filter_Function('do_shortcode'));
-        $twig->addFilter('time_ago', new \Twig_Filter_Function(array('TimberTwig', 'time_ago')));
+        $twig->addFilter('time_ago', new \Twig_Filter_Function(array($this->timber_twig, 'time_ago')));
         $twig->addFilter('twitterify', new \Twig_Filter_Function(array('TimberHelper', 'twitterify')));
         $twig->addFilter('twitterfy', new \Twig_Filter_Function(array('TimberHelper', 'twitterify')));
-        $twig->addFilter('wp_body_class', new \Twig_Filter_Function(array('TimberTwig', 'body_class')));
+        $twig->addFilter('wp_body_class', new \Twig_Filter_Function(array($this->timber_twig, 'body_class')));
         $twig->addFilter('wpautop', new \Twig_Filter_Function('wpautop'));
         $twig->addFilter('relative', new \Twig_Filter_Function(function ($link) {
             return \TimberURLHelper::get_rel_url($link, true);
         }));
-        $twig->addFilter('date', new \Twig_Filter_Function(array('TimberTwig', 'intl_date')));
+        $twig->addFilter('date', new \Twig_Filter_Function(array($this->timber_twig, 'intl_date')));
 
         $twig->addFilter('truncate', new \Twig_Filter_Function(function ($text, $len) {
             return \TimberHelper::trim_words($text, $len);
