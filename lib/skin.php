@@ -23,10 +23,13 @@ class Skin extends \Branch\Singleton {
         
         // set timber views
         // user can upload twig files to /wp-content/branch/site to override/add to all skins, or twigs will be loaded from $this->path()
-        \Timber::$dirname = array(
-	        $this->find_relative_path(WP_CONTENT_DIR . '/branch/site', $this->path()),
-			$this->find_relative_path($this->theme_path(), $this->path())
+        \Timber::$locations = array(
+	        WP_CONTENT_DIR . '/branch/site',
+			$this->path()
         );
+        
+        // we've set the absolute skin path above, so tell timber not to look any deeper
+        \Timber::$dirname = '';
         
         // register actions & filters
 		add_action( 'init', array( $this, 'register_menu_locations' )); // skin menu locations
