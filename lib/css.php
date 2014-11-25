@@ -47,7 +47,7 @@ class CSS extends \Branch\Singleton {
 			    $lessConfig->setUploadUrl($this->skin->uri() . '/tmp/customized');
 		    }
 		
-			wp_enqueue_style('branch-main', $this->skin->uri() . '/skin.less');
+			wp_enqueue_style('branch-main', str_replace(WP_CONTENT_URL, '', $this->skin->uri()) . '/skin.less');
 		
 			// set default global variables
 			$this->add_variables(array(
