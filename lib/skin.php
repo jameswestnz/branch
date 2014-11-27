@@ -34,26 +34,25 @@ class Skin extends \Branch\Singleton {
         // register actions & filters
 		add_action( 'init', array( $this, 'register_menu_locations' )); // skin menu locations
 		
-		add_action( 'init', function(){
-			$class = __NAMESPACE__ . '\\Skin';
-			$skin = $class::instance();
-			
-			// get all template files
-			$templates = array();
-			foreach(glob($skin->path() . '/template-*.twig') as $file) {
-				$parts = explode('/', $file);
-				$filename = array_pop($parts);
-				$name = ucwords(str_replace('-', ' ', str_replace('.twig', '', str_replace('template-', '', $filename))));
-				$templates[$filename] = $name;
-			}
-			
-			// Wordpress doesn't provide a way to add templates - so inject into the cache prior to get_page_templates() being called
-			$theme = wp_get_theme();
-			$cache_hash = md5( $theme->theme_root . '/' . $theme->stylesheet );
-			wp_cache_add('page_templates-' . $cache_hash, $templates, 'themes', 1800);
-		});
+		// add custom templates
+		add_action( 'init', array( $this, 'add_templates' ));
 		
 		return $this;
+	}
+	
+	public function add_templates() {
+		if(empty($this->config()) || !isset($this->config()['templates']) || empty($this->config()['templates'])) return;
+		
+		// get all template files
+		$templates = array();
+		foreach($this->config()['templates'] as $template) {
+			$templates[$template['filename']] = $template['name'];
+		}
+		
+		// Wordpress doesn't provide a way to add templates - so inject into the cache prior to get_page_templates() being called
+		$theme = wp_get_theme();
+		$cache_hash = md5( $theme->theme_root . '/' . $theme->stylesheet );
+		wp_cache_add('page_templates-' . $cache_hash, $templates, 'themes', 1800);
 	}
 	
 	/**
