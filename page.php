@@ -24,4 +24,12 @@
 $context = Timber::get_context();
 $post = new TimberPost();
 $context['post'] = $post;
-Timber::render(array('page-' . $post->post_name . '.twig', 'page.twig'), $context);
+
+$templates = array(
+	'page-' . $post->post_name . '.twig',
+	'page-' . $post->ID . '.twig'
+);
+
+if($page_template = $post->_wp_page_template) $templates[] = $page_template;
+
+Timber::render(array_merge($templates, array('page.twig')), $context);
