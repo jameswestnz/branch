@@ -123,6 +123,31 @@ class Customize extends \Branch\Singleton {
 								);
 							break;
 							
+							case 'textarea':
+								$wp_customize->add_control(
+									$field['id'],
+									array(
+										'label'      => __( $field['label'], 'branch' ),
+										'section'    => $section['id'],
+										'type'		 => 'textarea',
+										'priority'	 => $key
+									)
+								);
+							break;
+							
+							case 'select':
+								$wp_customize->add_control(
+									$field['id'],
+									array(
+										'label'      => __( $field['label'], 'branch' ),
+										'section'    => $section['id'],
+										'type'       => 'select',
+										'choices'    => (array)$field['choices'],
+										'priority'	 => $key
+									)
+								);
+							break;
+							
 							case 'color':
 								$wp_customize->add_control(
 									new \WP_Customize_Color_Control(
