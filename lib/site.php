@@ -85,7 +85,7 @@ class Site extends \Branch\Singleton {
 				trigger_error(sprintf(__('Error locating %s for inclusion'), $file), E_USER_ERROR);
 			}
 			
-			require_once $filepath;
+			require_once realpath($filepath);
 		}
 		unset($file, $filepath);
 	}
