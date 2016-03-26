@@ -69,14 +69,14 @@ class Site extends \Branch\Singleton {
 	
 	// might make this an autoloader form the lib folder
 	public function include_libs() {
-		$includes = apply_filters('branch_includes', glob('lib/*.php'));
+		$includes = apply_filters('branch_includes', glob(get_template_directory() . '/lib/*.php'));
+		$includes = array_diff($includes, array(get_template_directory() . '/lib/site.php'));
 		
 		foreach ($includes as $file) {
-			if (!$filepath = locate_template($file)) {
+			$file = str_replace(get_template_directory(), '', $file);
+			if (!$filepath = locate_template($file, true)) {
 				trigger_error(sprintf(__('Error locating %s for inclusion'), $file), E_USER_ERROR);
 			}
-			
-			require_once $filepath;
 		}
 		unset($file, $filepath);
 	}
