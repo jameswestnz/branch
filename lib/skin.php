@@ -8,12 +8,6 @@ class Skin extends \Branch\Singleton {
 	
 		// load config
 		$this->config();
-        
-        // CSS compiling
-        $this->css($this);
-		
-		// load customize class
-		$this->customize($this);
 		
 		// register skin sidebars
 		$this->register_sidebars();
@@ -23,10 +17,7 @@ class Skin extends \Branch\Singleton {
         
         // set timber views
         // user can upload twig files to /wp-content/branch/site to override/add to all skins, or twigs will be loaded from $this->path()
-        \Timber::$locations = array(
-	        WP_CONTENT_DIR . '/branch/site',
-			$this->path()
-        );
+        \Timber::$locations = $this->paths();
         
         // we've set the absolute skin path above, so tell timber not to look any deeper
         \Timber::$dirname = '';
@@ -63,13 +54,11 @@ class Skin extends \Branch\Singleton {
 	 * @return void
 	 */
 	private function theme_path() {
-		$theme = wp_get_theme();
-		
 		if(!isset($this->theme_path)) {
 			if(is_child_theme()) {
-				$this->theme_path = WP_CONTENT_DIR . '/themes/' . $theme->get('Template');
+				$this->theme_path = get_stylesheet_directory();
 			} else {
-				$this->theme_path = WP_CONTENT_DIR . '/themes/' . $theme->stylesheet;
+				$this->theme_path = get_template_directory();
 			}
 		}
 		
@@ -145,25 +134,6 @@ class Skin extends \Branch\Singleton {
 		register_nav_menus($locations);
 	}
 	
-	/*
-	 * get_skin_dirs
-	 * 
-	 * Retrieves skin paths
-	 *
-	 * Returns absolute paths - recursing up the tree may not work in symlinked environments
-	 */
-	private function get_skin_dirs($skin_name) {
-		$paths = array();
-		
-		foreach($this->skin_paths as $skin_path) {
-			if($path = realpath(WP_CONTENT_DIR . $skin_path . '/' . $skin_name)) {
-				$paths[] = $path;
-			}
-		}
-		
-		return $paths;
-	}
-	
 	/**
 	 * name function.
 	 * 
@@ -172,21 +142,8 @@ class Skin extends \Branch\Singleton {
 	 */
 	public function name() {
 		if(!isset($this->name)) {
-			// load from database - we'll set to default if none exists
-			$name = get_theme_mod('skin', 'default');
-			
-			// now check if we've been passed a skin in $_POST['customized']
-	        if(isset($_POST['customized'])) {
-	        	$customized = json_decode(stripslashes(html_entity_decode($_POST['customized'])));
-	        	
-	        	// have we set a skin? Make sure it's not the same
-	        	if(isset($customized->skin) && $customized->skin != $name) {
-	        		$name = $customized->skin;
-	        	}
-	        }
-		
 			// set
-			$this->name = $name;
+			$this->name = wp_get_theme()->Name;
 		}
 		
 		return $this->name;
@@ -198,28 +155,61 @@ class Skin extends \Branch\Singleton {
 	 * @access public
 	 * @return void
 	 */
-	public function path() {
-		if(!isset($this->path)) {
-			// get the current theme
-			$theme = wp_get_theme();
-			
+	public function dir() {
+		if(!isset($this->dir)) {
 			// check for skins outside of theme directories
-			if(file_exists(WP_CONTENT_DIR . "/branch/skins/{$this->name()}")) {
-				$this->path = WP_CONTENT_DIR . "/branch/skins/{$this->name()}";
+			foreach($this->skin_roots() as $skin_path) {
+				if(file_exists($skin_path['dir'] . "/{$this->name()}")) {
+					$this->dir = $skin_path['dir'] . "/{$this->name()}";
+				}
 			}
 			
 			// check child theme directory
-			if(file_exists(WP_CONTENT_DIR . "/themes/{$theme->stylesheet}/skins/{$this->name()}")) {
-				$this->path = WP_CONTENT_DIR . "/themes/{$theme->stylesheet}/skins/{$this->name()}";
+			if(file_exists(get_stylesheet_directory() . "/skin")) {
+				$this->dir = get_stylesheet_directory() . "/skin";
 			}
 			
 			// check parent theme directory
-			if(file_exists(WP_CONTENT_DIR . "/themes/{$theme->get('Template')}/skins/{$this->name()}")) {
-				$this->path = WP_CONTENT_DIR . "/themes/{$theme->get('Template')}/skins/{$this->name()}";
+			if(file_exists(get_template_directory() . "/skin")) {
+				$this->dir = get_template_directory() . "/skin";
 			}
 		}
 		
-		return $this->path;
+		return $this->dir;
+	}
+	
+	public function path() {
+		return $this->dir();
+	}
+	
+	/**
+	 * template_paths function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	 
+	public function paths() {
+		if(!isset($this->paths)) {
+			// check for skins outside of theme directories
+			foreach($this->skin_roots() as $skin_path) {
+				if(file_exists($skin_path['dir'] . "/{$this->name()}")) {
+					$this->paths[] = $skin_path['dir'] . "/{$this->name()}";
+				}
+			}
+			
+			// check child theme directory
+			if(file_exists(get_stylesheet_directory() . "/skin")) {
+				$this->paths[] = get_stylesheet_directory() . "/skin";
+			}
+			
+			// check parent theme directory
+			if(file_exists(get_template_directory() . "/skin")) {
+				$this->paths[] = get_template_directory() . "/skin";
+			}
+		}
+		
+		return $this->paths;
 	}
 	
 	/**
@@ -230,28 +220,26 @@ class Skin extends \Branch\Singleton {
 	 */
 	public function uri() {
 		if(!isset($this->uri)) {
-			// get the current theme
-			$theme = wp_get_theme();
-			
 			// check for skins outside of theme directories
-			if(file_exists(WP_CONTENT_DIR . "/branch/skins/{$this->name()}")) {
-				$this->uri = WP_CONTENT_URL . "/branch/skins/{$this->name()}";
+			foreach($this->skin_roots() as $skin_path) {
+				if(file_exists($skin_path['dir'] . "/{$this->name()}")) {
+					$this->uri = $skin_path['uri'] . "/{$this->name()}";
+				}
 			}
 			
 			// check child theme directory
-			if(file_exists(WP_CONTENT_DIR . "/themes/{$theme->stylesheet}/skins/{$this->name()}")) {
-				$this->uri = WP_CONTENT_URL . "/themes/{$theme->stylesheet}/skins/{$this->name()}";
+			if(file_exists(get_stylesheet_directory() . "/skin")) {
+				$this->uri = get_stylesheet_directory_uri() . "/skin";
 			}
 			
 			// check parent theme directory
-			if(file_exists(WP_CONTENT_DIR . "/themes/{$theme->get('Template')}/skins/{$this->name()}")) {
-				$this->uri = WP_CONTENT_URL . "/themes/{$theme->get('Template')}/skins/{$this->name()}";
+			if(file_exists(get_template_directory() . "/skin")) {
+				$this->uri = get_template_directory_uri() . "/skin";
 			}
 		}
 		
 		return $this->uri;
 	}
-	
 	
 	/**
 	 * skins function.
@@ -261,19 +249,10 @@ class Skin extends \Branch\Singleton {
 	 */
 	public function skins() {
 		if(!isset($this->skins)) {
-			$theme = wp_get_theme();
-			
-			$skin_paths = array(
-				'/branch/skins',
-				'/themes/' . $theme->get('Template') . '/skins',
-				'/themes/' . $theme->stylesheet . '/skins'
-			);
-			
 			$skins = array();
 			
-			foreach($skin_paths as $skin_path) {
-				$skin_path = WP_CONTENT_DIR . $skin_path;
-				$dirs = array_filter(glob($skin_path . '/*'), 'is_dir');
+			foreach($this->skin_roots() as $skin_path) {
+				$dirs = array_filter(glob($skin_path['dir'] . '/*'), 'is_dir');
 			
 				foreach($dirs as $dir) {
 					$name = basename($dir);
@@ -288,6 +267,21 @@ class Skin extends \Branch\Singleton {
 		}
 		
 		return $this->skins;
+	}
+	
+	/**
+	 * skin_roots function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	public function skin_roots() {
+		return apply_filters('branch_skin_roots', array(
+			array(
+				'dir' => WP_CONTENT_DIR . '/skins',
+				'uri' => WP_CONTENT_URL . '/skins'
+			)
+		));
 	}
 	
 	/**
@@ -330,34 +324,6 @@ class Skin extends \Branch\Singleton {
 		}
 		
 		return $this->config;
-	}
-	
-	/**
-	 * customize function.
-	 * 
-	 * @access public
-	 * @return void
-	 */
-	public function customize() {
-		if(!isset($this->customize)) {
-			$this->customize = \Branch\Customize::instance($this);
-		}
-		
-		return $this->customize;
-	}
-	
-	/**
-	 * css function.
-	 * 
-	 * @access public
-	 * @return void
-	 */
-	public function css() {
-		if(!isset($this->css)) {
-			$this->css = \Branch\CSS::instance($this);
-		}
-		
-		return $this->css;
 	}
 	
 	/**

@@ -11,6 +11,11 @@ class Site extends \Branch\Singleton {
 	 * @return void
 	 */
 	public function __construct(){
+		if (!class_exists('Timber')){
+			echo 'Timber not activated. Make sure you activate the plugin in <a href="/wp-admin/plugins.php#timber">/wp-admin/plugins.php</a>';
+			return;
+		}
+		
 		add_action('branch_construct', array($this, 'include_libs'), 99);
 		add_action('branch_construct', array($this, 'init'), 100);
 		
