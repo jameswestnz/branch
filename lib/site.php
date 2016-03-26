@@ -67,18 +67,9 @@ class Site extends \Branch\Singleton {
 	    return $plugins;
 	}
 	
-	// might make this an autoloader form the lib folder - no point in manually adding to an array, although this method may be more secure?
+	// might make this an autoloader form the lib folder
 	public function include_libs() {
-		$includes = apply_filters('branch_includes', array(
-			'lib/vendor/jarednova/timber-library/timber.php',
-			'lib/twig.php',
-			'lib/skin.php',
-			'lib/css.php',
-			'lib/breadcrumbs.php',
-			'lib/customize.php',
-			'lib/shortcodes.php',
-			'lib/vendor/oncletom/wp-less/bootstrap-for-theme.php'
-		));
+		$includes = apply_filters('branch_includes', glob('lib/*.php'));
 		
 		foreach ($includes as $file) {
 			if (!$filepath = locate_template($file)) {
