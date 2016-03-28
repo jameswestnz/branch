@@ -12,10 +12,9 @@
  */
 $context = Timber::get_context();
 
-if($page_id = get_option('page_for_posts')) {
-	$context['post'] = get_post($page_id);
-	$context['post']->title = $context['post']->post_title;
-}
+$templates = array('index.twig');
+
+if(is_home()) array_unshift($templates, 'home.twig');
 
 $context['posts'] = Timber::get_posts();
-Timber::render('index.twig', $context);
+Timber::render($templates, $context);

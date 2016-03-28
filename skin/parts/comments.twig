@@ -10,7 +10,7 @@
 	    <div class="panel-body">
 	        <ul class="media-list">
 				{% for cmt in post.get_comments() %}
-					{% include "comment.twig" with {comment:cmt} %}
+					{% include "parts/comment.twig" with {comment:cmt} %}
 				{% endfor %}
 	        </ul>
 	    </div>
@@ -28,8 +28,8 @@
 	        </h3>
 	    </div>
 	    <div class="panel-body">
-			{% if comment_registration and not is_user_logged_in() %}
-				<p>{{sprintf(__('You must be <a href="%s">logged in</a> to post a comment.'), comment_login_url)}}</p>
+			{% if get_option('comment_registration') and not is_user_logged_in() %}
+				<p>{{sprintf(__('You must be <a href="%s">logged in</a> to post a comment.'), wp_logout_url(get_permalink()))}}</p>
 			{% else %}
 				<form action="{{site.url}}/wp-comments-post.php" method="post" id="commentform">
 					{% if is_user_logged_in() %}

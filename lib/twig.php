@@ -157,7 +157,9 @@ class Twig extends \Branch\Singleton {
 			'single_post_title',
 			'post_class',
 			'the_posts_pagination',
-			'paginate_links'
+			'paginate_links',
+			'get_option',
+			'wp_login_url'
 		);
 		
 		foreach($auto_add_functions as $name) {
