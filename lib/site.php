@@ -116,20 +116,6 @@ class Site extends \Branch\Singleton {
 	}
 	
 	/**
-	 * uri function.
-	 * 
-	 * @access public
-	 * @return void
-	 */
-	public function uri() {
-		if(!isset($this->uri)) {
-			$this->uri = get_stylesheet_directory_uri();
-		}
-		
-		return $this->uri;
-	}
-	
-	/**
 	 * skin function.
 	 * 
 	 * @access private
