@@ -152,7 +152,12 @@ class Twig extends \Branch\Singleton {
 			'is_home',
 			'is_front_page',
 			'get_theme_mod',
-			'bloginfo'
+			'bloginfo',
+			'have_posts',
+			'single_post_title',
+			'post_class',
+			'the_posts_pagination',
+			'paginate_links'
 		);
 		
 		foreach($auto_add_functions as $name) {

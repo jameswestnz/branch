@@ -1,4 +1,4 @@
-<article class="tease tease-{{post.post_type}}" id="tease-{{post.ID}}">
+<article id="content-{{post.ID}}" {{post_class(['content', 'content-'~post.post_type])}}>
 	{% block content %}
 		<div class="col-md-12">
 			<a href="{{post.link}}">

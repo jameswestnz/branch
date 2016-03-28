@@ -1,6 +1,6 @@
 <?php
 /**
- * The template for displaying 404 pages (Not Found)
+ * The template for comments popup pages (Not Found)
  *
  * @package  WordPress
  * @subpackage  Branch
@@ -8,4 +8,4 @@
  */
 
 $context = Timber::get_context();
-Timber::render('404.twig', $context);
+Timber::render('comments-popup.twig', $context);
