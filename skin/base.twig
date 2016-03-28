@@ -36,16 +36,11 @@
 
         <section id="content" role="main" class="container">
         	<div class="row">
-        		<div class="{% if get_sidebar('sidebar-primary') %}col-md-8{% else %}col-md-12{% endif %} {{sidebar_class}}">
+        		<div class="col-md-12 {{sidebar_class}}">
 	                {% block content %}
 	                    Sorry, no content
 	                {% endblock %}
 	            </div>
-	            {% if get_sidebar('sidebar-primary') %}
-	                <aside class="col-md-4 sidebar">
-	                    {{get_sidebar('sidebar-primary')}}
-	                </aside>
-	            {% endif %}
         	</div>
         </section>
 

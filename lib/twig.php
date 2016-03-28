@@ -159,7 +159,8 @@ class Twig extends \Branch\Singleton {
 			'the_posts_pagination',
 			'paginate_links',
 			'get_option',
-			'wp_login_url'
+			'wp_login_url',
+			'is_paged'
 		);
 		
 		foreach($auto_add_functions as $name) {
