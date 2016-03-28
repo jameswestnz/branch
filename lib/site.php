@@ -104,6 +104,8 @@ class Site extends \Branch\Singleton {
 	public function add_to_context($context){
 		global $user_identity;
 		$context['site'] = $this;
+		$context['site']->url = get_bloginfo('url');
+		$context['site']->name = get_bloginfo();
 		$context['user_identity'] = $user_identity;
 		
 		if ( class_exists( 'BranchBreadcrumbs' ) ) {
