@@ -44,25 +44,30 @@ class Skin extends \Branch\Singleton {
 			wp_cache_add('page_templates-' . $cache_hash, $templates, 'themes', 1800);
 		});
 		
+		// load languages from current skin, child theme, and parent theme
+		load_theme_textdomain('branch', get_template_directory() . '/skin/languages');
+		load_theme_textdomain(wp_get_theme()->Name, get_stylesheet_directory() . '/skin/languages');
+		load_theme_textdomain($this->name(), $this->dir() . '/languages');
+		
 		return $this;
 	}
 	
 	/**
-	 * theme_path function.
+	 * theme_dir function.
 	 * 
 	 * @access private
 	 * @return void
 	 */
-	private function theme_path() {
-		if(!isset($this->theme_path)) {
+	private function theme_dir() {
+		if(!isset($this->theme_dir)) {
 			if(is_child_theme()) {
-				$this->theme_path = get_stylesheet_directory();
+				$this->theme_dir = get_stylesheet_directory();
 			} else {
-				$this->theme_path = get_template_directory();
+				$this->theme_dir = get_template_directory();
 			}
 		}
 		
-		return $this->theme_path;
+		return $this->theme_dir;
 	}
 	
 	/**
