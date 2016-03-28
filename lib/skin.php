@@ -143,7 +143,7 @@ class Skin extends \Branch\Singleton {
 	public function name() {
 		if(!isset($this->name)) {
 			// set
-			$this->name = wp_get_theme()->Name;
+			$this->name = get_theme_mod('skin_name', wp_get_theme()->Name);
 		}
 		
 		return $this->name;
