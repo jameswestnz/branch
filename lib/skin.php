@@ -297,7 +297,7 @@ class Skin extends \Branch\Singleton {
 	 */
 	public function config() {
 		if(!isset($this->config)) {
-			$file = $this->path() . '/config.json';
+			$file = $this->find_config();
 			$option = 'skin_config_' . $this->name();
 			
 			$config = get_option($option, null);
@@ -318,17 +318,36 @@ class Skin extends \Branch\Singleton {
 			}
 			
 			// if the config is still null, but we had config in the database, let's fall back to that
-			if($this->config === null && $config !== null) {
+			if((!isset($this->config) || $this->config === null) && isset($config) && $config !== null) {
 				$this->config = $config;
 			}
 			
 			// still nothing
-			if($this->config === null) {
+			if(!isset($this->config) || $this->config === null) {
 				$this->config = array();
 			}
 		}
 		
 		return $this->config;
+	}
+	
+	private function find_config() {		
+		// check for skins outside of theme directories
+		foreach($this->skin_roots() as $skin_path) {
+			if(file_exists($skin_path['dir'] . "/{$this->name()}/branch.json")) {
+				return $skin_path['dir'] . "/{$this->name()}/branch.json";
+			}
+		}
+		
+		// check child theme directory
+		if(file_exists(get_stylesheet_directory() . "/skin/branch.json")) {
+			return get_stylesheet_directory() . "/skin/branch.json";
+		}
+		
+		// check parent theme directory
+		if(get_stylesheet_directory() != get_template_directory() && file_exists(get_template_directory() . "/skin/branch.json")) {
+			return get_template_directory() . "/skin/branch.json";
+		}
 	}
 	
 	/**
