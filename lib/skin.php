@@ -297,21 +297,21 @@ class Skin extends \Branch\Singleton {
 	 */
 	public function config() {
 		if(!isset($this->config)) {
-			$file = $this->find_config();
+			$files = $this->find_config_files();
 			$option = 'skin_config_' . $this->name();
 			
 			$config = get_option($option, null);
 			
 			// if we have config in the database, we have a modified time, the config file exists, and was modified is less than or equal to the the database time; return the stored config
-			if($config !== null && isset($config['modified']) && file_exists($file) && filemtime($file) <= $config['modified']) {
+			if($config !== null && isset($config['modified']) && $files[0]['modified'] <= $config['modified']) {
 				$this->config = $config;
 			}
 			else
 			
 			// else, if we have not saved config, or modified was not set, or the file was modified recently; set and update database
-			if($config === null || !isset($config['modified']) || (file_exists($file) && filemtime($file) > $config['modified'])) {
-				if($this->config = json_decode(file_get_contents($file), true)) {
-					$this->config['modified'] = filemtime($file);
+			if($config === null || !isset($config['modified']) || ($files[0]['modified'] > $config['modified'])) {
+				if($this->config = $this->merge_configs()) {
+					$this->config['modified'] = $files[0]['modified'];
 					
 					update_option($option, $this->config);
 				}
@@ -331,23 +331,60 @@ class Skin extends \Branch\Singleton {
 		return $this->config;
 	}
 	
-	private function find_config() {		
-		// check for skins outside of theme directories
-		foreach($this->skin_roots() as $skin_path) {
-			if(file_exists($skin_path['dir'] . "/{$this->name()}/branch.json")) {
-				return $skin_path['dir'] . "/{$this->name()}/branch.json";
+	private function merge_configs() {
+		$configs = $this->find_config_files();
+		$return = array();
+		
+		foreach($configs as $config) {
+			if($array = json_decode(file_get_contents($config['path']), true)) {
+				$return = array_merge_recursive($array, $return);
 			}
 		}
 		
-		// check child theme directory
-		if(file_exists(get_stylesheet_directory() . "/skin/branch.json")) {
-			return get_stylesheet_directory() . "/skin/branch.json";
+		return $return;
+	}
+	
+	private function find_config_files() {
+		if(!isset($this->config_files)) {
+			$config_files = array();
+					
+			// check for skins outside of theme directories
+			foreach($this->skin_roots() as $skin_path) {
+				$file = $skin_path['dir'] . "/{$this->name()}/branch.json";
+				if(file_exists($file)) {
+					$config_files[] = array(
+						'path'		=> $file,
+						'modified'	=> filemtime($file)
+					);
+				}
+			}
+			
+			// check child theme directory
+			$file = get_stylesheet_directory() . "/skin/branch.json";
+			if(file_exists($file)) {
+				$config_files[] = array(
+					'path'		=> $file,
+					'modified'	=> filemtime($file)
+				);
+			}
+			
+			// check parent theme directory
+			$file = get_template_directory() . "/skin/branch.json";
+			if(get_stylesheet_directory() != get_template_directory() && file_exists($file)) {
+				$config_files[] = array(
+					'path'		=> $file,
+					'modified'	=> filemtime($file)
+				);
+			}
+			
+			usort($config_files, function($a, $b){
+				return ($a['modified'] > $b['modified']);
+			});
+			
+			$this->config_files = $config_files;
 		}
 		
-		// check parent theme directory
-		if(get_stylesheet_directory() != get_template_directory() && file_exists(get_template_directory() . "/skin/branch.json")) {
-			return get_template_directory() . "/skin/branch.json";
-		}
+		return $this->config_files;
 	}
 	
 	/**

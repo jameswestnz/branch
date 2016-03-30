@@ -56,7 +56,7 @@ if (is_day()){
 
 $templates[] = 'index.twig';
 
-$context['post'] = $page_for_posts;
+if(isset($page_for_posts)) $context['post'] = $page_for_posts;
 $context['posts'] = Timber::get_posts();
 
 Timber::render($templates, $context);
