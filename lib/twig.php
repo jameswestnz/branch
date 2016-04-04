@@ -10,7 +10,7 @@ class Twig extends \Branch\Singleton {
 	 * @return void
 	 */
 	public function __construct() {
-		add_action( 'timber/twig/filters', array( $this, 'add_timber_filters' ) );
+		add_filter( 'timber/twig', array( $this, 'modify_twig' ) );
 	}
 	
 	/**
@@ -20,7 +20,7 @@ class Twig extends \Branch\Singleton {
 	 * @param mixed $twig
 	 * @return void
 	 */
-	public function add_twig_filters($twig){
+	public function modify_twig($twig){
 		// add wordpress additional functions, filters, actions
 		// avoids using "function" filter/function
 		$auto_add_functions = array(
@@ -96,8 +96,7 @@ class Twig extends \Branch\Singleton {
 		$twig->addFunction(new \Twig_SimpleFunction('get_menu', function ($location) {
 			return new \TimberMenu($location);
         }));
-
-		$twig = apply_filters( 'timber/twig', $twig );
+        
 		return $twig;
 	}
 	
