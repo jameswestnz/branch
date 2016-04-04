@@ -1,0 +1,23 @@
+{
+  "name": "jameswestnz/branch",
+  "type": "wordpress-theme",
+  "license": "MIT",
+  "description": "Wordpress starter theme using Timber/twig",
+  "homepage": "https://github.com/jameswestnz/branch",
+  "authors": [
+    {
+      "name": "James West",
+      "email": "james@jameswest.co.nz",
+      "homepage": "https://github.com/jameswestnz"
+    }
+  ],
+  "keywords": [
+    "wordpress", "timber", "twig", "wp"
+  ],
+  "support": {
+    "issues": "https://github.com/jameswestnz/branch/issues"
+  },
+  "require": {
+    "timber/timber": "*"
+  }
+}
