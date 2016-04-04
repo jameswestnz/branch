@@ -10,7 +10,7 @@ class Twig extends \Branch\Singleton {
 	 * @return void
 	 */
 	public function __construct() {
-        add_action('twig_apply_filters', array($this, 'add_twig_filters'));
+		add_action( 'timber/twig/filters', array( $this, 'add_timber_filters' ) );
 	}
 	
 	/**
@@ -22,6 +22,7 @@ class Twig extends \Branch\Singleton {
 	 */
 	public function add_twig_filters($twig){
 		// add wordpress additional functions, filters, actions
+		// avoids using "function" filter/function
 		$auto_add_functions = array(
 			'_n',
 			'sprintf',
