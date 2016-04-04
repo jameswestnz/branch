@@ -10,6 +10,7 @@ class Twig extends \Branch\Singleton {
 	 * @return void
 	 */
 	public function __construct() {
+		echo 'here';
 		add_filter( 'timber/twig', array( $this, 'modify_twig' ) );
 	}
 	

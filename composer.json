@@ -18,6 +18,12 @@
     "issues": "https://github.com/jameswestnz/branch/issues"
   },
   "require": {
-    "timber/timber": "*"
+    "composer/installers": "~1.0.12",
+    "timber/timber": "^0.22.6"
+  },
+  "extra": {
+    "installer-paths": {
+      "vendor/timber/timber/": ["timber/timber"]
+    }
   }
 }
