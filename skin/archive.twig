@@ -1,34 +1,38 @@
-{% extends "base.twig" %}
+{% extends "layout.twig" %}
 
 {% block content %}
-	{% if have_posts() %}
-		<div class="content-wrapper">
-			{% if post %}
-			<article class="post-type-{{post.post_type}}" id="post-{{post.ID}}">
-				<section class="article-content">
-					<h1 class="article-h1">{{post.title}}</h1>
-	
-					{% if not is_paged() %}
-					<div class="article-body">
-						{{post.content}}
-					</div>
+    {% embed 'parts/wrapper.twig' %}
+		{% block content %}
+			{% if have_posts() %}
+				<div class="content-wrapper">
+					{% if post %}
+					<article class="post-type-{{post.post_type}}" id="post-{{post.ID}}">
+						<section class="article-content">
+							<h1 class="article-h1">{{post.title}}</h1>
+			
+							{% if not is_paged() %}
+							<div class="article-body">
+								{{post.content}}
+							</div>
+							{% endif %}
+						</section>
+			
+					</article>
 					{% endif %}
-				</section>
-	
-			</article>
+					
+					{% for post in posts %}
+						{% include ['parts/content-'~post.post_type~'.twig', 'parts/content.twig'] %}
+					{% endfor %}
+					
+					{{paginate_links({
+						'prev_text'          : __( 'Previous page', 'branch' ),
+						'next_text'          : __( 'Next page', 'branch' ),
+						'before_page_number' : '<span class="meta-nav screen-reader-text">' ~ __( 'Page', 'branch' ) ~ ' </span>'
+					})}}
+				</div> <!-- /content-wrapper -->
+			{% else %}
+				{% include ['parts/content-none.twig'] %}
 			{% endif %}
-			
-			{% for post in posts %}
-				{% include ['parts/content-'~post.post_type~'.twig', 'parts/content.twig'] %}
-			{% endfor %}
-			
-			{{paginate_links({
-				'prev_text'          : __( 'Previous page', 'branch' ),
-				'next_text'          : __( 'Next page', 'branch' ),
-				'before_page_number' : '<span class="meta-nav screen-reader-text">' ~ __( 'Page', 'branch' ) ~ ' </span>'
-			})}}
-		</div> <!-- /content-wrapper -->
-	{% else %}
-		{% include ['parts/content-none.twig', '404.twig'] %}
-	{% endif %}
+		{% endblock %}
+    {% endembed %}
 {% endblock %}

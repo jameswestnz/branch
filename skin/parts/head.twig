@@ -27,31 +27,4 @@
 	      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 	    <![endif]-->
 	</head>
-    <body class="{{body_class}}" data-template="base.twig">
-        {% block header %}
-	        <header class="header">
-	        	{% include 'parts/header.twig' %}
-	        </header>
-        {% endblock %}
-
-        <section id="content" role="main" class="container">
-        	<div class="row">
-        		<div class="col-md-12 {{sidebar_class}}">
-	                {% block content %}
-	                    Sorry, no content
-	                {% endblock %}
-	            </div>
-        	</div>
-        </section>
-
-        {% block footer %}
-            <footer id="footer">
-                {% include 'parts/footer.twig' %}
-            </footer>
-            {{wp_footer()}}
-        {% endblock %}
-
-	    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    </body>
-</html>
+    <body class="{{body_class}}">

@@ -1,5 +1,9 @@
-{% extends "base.twig" %}
+{% extends "layout.twig" %}
 
 {% block content %}
-	Sorry, we couldn't find what you're looking for.
+    {% embed 'parts/wrapper.twig' %}
+		{% block content %}
+			<h1>Sorry, we couldn't find what you're looking for.</h1>
+		{% endblock %}
+    {% endembed %}
 {% endblock %}

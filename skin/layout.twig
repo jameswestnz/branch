@@ -1,0 +1,28 @@
+{% block head %}
+    {% include 'parts/head.twig' %}
+{% endblock %}
+
+{% block header %}
+    <header class="header">
+    	{% include 'parts/header.twig' %}
+    </header>
+{% endblock %}
+
+{% block content %}
+    {% embed 'parts/wrapper.twig' %}
+		{% block content %}
+			{% include 'parts/content-none.twig' %}
+		{% endblock %}
+    {% endembed %}
+{% endblock %}
+
+{% block footer %}
+    <footer id="footer">
+        {% include 'parts/footer.twig' %}
+    </footer>
+    {{wp_footer()}}
+{% endblock %}
+
+{% block foot %}
+    {% include 'parts/foot.twig' %}
+{% endblock %}
