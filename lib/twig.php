@@ -32,7 +32,8 @@ class Twig extends \Branch\Singleton {
 	public function modify_twig($twig){
 		$allowed_internal_methods = array(
 			'sprintf',
-			'in_array'
+			'in_array',
+			'htmlspecialchars'
 		);
 		
 		// allow all "user" functions, essentially any public function in the wordpress scope.
