@@ -35,7 +35,7 @@ if(post_password_required($post->ID)) {
 	} else if(is_page()) {
 		array_unshift($templates, 'page-' . $post->post_name . '.twig', 'page-' . $post->ID . '.twig', 'page.twig');
 		
-		if($page_template = $post->_wp_page_template) array_unshift($templates, $page_template . '.twig');
+		if($page_template = $post->_wp_page_template) array_unshift($templates, $page_template);
 	}
 	
 	Timber::render($templates, $context);

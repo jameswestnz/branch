@@ -30,13 +30,7 @@ class Skin extends \Branch\Singleton {
 			$skin = $class::instance();
 			
 			// get all template files
-			$templates = array();
-			foreach(glob($skin->path() . '/template-*.twig') as $file) {
-				$parts = explode('/', $file);
-				$filename = array_pop($parts);
-				$name = ucwords(str_replace('-', ' ', str_replace('.twig', '', str_replace('template-', '', $filename))));
-				$templates[$filename] = $name;
-			}
+			$templates = $skin->templates();
 			
 			// Wordpress doesn't provide a way to add templates - so inject into the cache prior to get_page_templates() being called
 			$theme = wp_get_theme();
@@ -50,6 +44,39 @@ class Skin extends \Branch\Singleton {
 		load_theme_textdomain($this->name(), $this->dir() . '/languages');
 		
 		return $this;
+	}
+	
+	private function templates() {
+		if(!isset($this->templates)) {
+			$templates = array();
+					
+			// check for skins outside of theme directories
+			foreach($this->skin_roots() as $skin_path) {
+				foreach(glob($skin_path['dir'] . '/template-*.twig') as $file) {
+					$filename = basename($file);
+					$name = ucwords(str_replace('-', ' ', str_replace('.twig', '', str_replace('template-', '', $filename))));
+					if(!isset($templates[$filename])) $templates[$filename] = $name;
+				}
+			}
+			
+			// check child theme directory
+			foreach(glob(get_stylesheet_directory() . '/skin/template-*.twig') as $file) {
+				$filename = basename($file);
+				$name = ucwords(str_replace('-', ' ', str_replace('.twig', '', str_replace('template-', '', $filename))));
+				if(!isset($templates[$filename])) $templates[$filename] = $name;
+			}
+			
+			// check parent theme directory
+			foreach(glob(get_template_directory() . '/skin/template-*.twig') as $file) {
+				$filename = basename($file);
+				$name = ucwords(str_replace('-', ' ', str_replace('.twig', '', str_replace('template-', '', $filename))));
+				if(!isset($templates[$filename])) $templates[$filename] = $name;
+			}
+			
+			$this->templates = $templates;
+		}
+		
+		return $this->templates;
 	}
 	
 	/**
