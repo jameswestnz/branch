@@ -10,6 +10,15 @@ class Twig extends \Branch\Singleton {
 	 * @return void
 	 */
 	public function __construct() {
+		// remove actions defined in timber-twig.php as we want to hijack
+		remove_all_actions( 'timber/twig/filters' );
+		
+		// extended class at bottom of this file
+		$TimberTwig = new TimberTwig();
+		add_action( 'timber/twig/filters', array( $TimberTwig, 'add_timber_filters_deprecated' ) );
+		add_action( 'timber/twig/filters', array( $TimberTwig, 'add_timber_filters' ) );
+		
+		// and add our own functions
 		add_filter( 'timber/twig', array( $this, 'modify_twig' ) );
 	}
 	
@@ -21,51 +30,22 @@ class Twig extends \Branch\Singleton {
 	 * @return void
 	 */
 	public function modify_twig($twig){
-		// add wordpress additional functions, filters, actions
-		// avoids using "function" filter/function
-		$auto_add_functions = array(
-			'_n',
+		$allowed_internal_methods = array(
 			'sprintf',
-			'cancel_comment_reply_link',
-			'comment_author',
-			'comment_author_email',
-			'comment_author_url',
-			'comment_id_fields',
-			'comment_form_title',
-			'get_permalink',
-			'wp_logout_url',
-			'comments_open',
-			'is_user_logged_in',
-			'get_avatar',
-			'get_comments_number',
-			'number_format_i18n',
-			'get_the_title',
-			'get_comment_date',
-			'htmlspecialchars',
-			'get_comment_link',
-			'current_user_can',
-			'get_edit_comment_link',
-			'is_home',
-			'is_front_page',
-			'get_theme_mod',
-			'bloginfo',
-			'have_posts',
-			'single_post_title',
-			'post_class',
-			'the_posts_pagination',
-			'paginate_links',
-			'get_option',
-			'wp_login_url',
-			'is_paged',
-			'get_body_class',
 			'in_array'
 		);
 		
-		foreach($auto_add_functions as $name) {
-			$twig->addFunction(new \Twig_SimpleFunction($name, function () use($name) {
-				return call_user_func_array($name, func_get_args());
-	        }));
-		}
+		// allow all "user" functions, essentially any public function in the wordpress scope.
+		// We're saying no to "internal" PHP functions as they shouldn't be needed, and potentially dangerous
+		$twig->registerUndefinedFunctionCallback(function($name) use ($allowed_internal_methods){
+			$allowed = array_merge($allowed_internal_methods, get_defined_functions()['user']);
+			
+		    if (in_array($name, $allowed)) {
+		        return new \Twig_Function_Function($name);
+		    }
+    
+			return false;
+		});
         
         // custom functions
 		$twig->addFunction(new \Twig_SimpleFunction('get_comment_time', function ($comment_id) {
@@ -121,4 +101,8 @@ class Twig extends \Branch\Singleton {
 		}
 		return false;
 	}
+}
+
+// need more control over what goes on in TimberTwig... lets extend and hijack
+class TimberTwig extends \TimberTwig {
 }
