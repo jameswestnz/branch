@@ -14,6 +14,12 @@ class Skin extends \Branch\Singleton {
 		
 		// add image sizes
 		$this->add_image_sizes();
+		
+		// enqueue scripts
+		add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
+		
+		// enqueue styles
+		add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
         
         // set timber views
         // user can upload twig files to /wp-content/branch/site to override/add to all skins, or twigs will be loaded from $this->path()
@@ -44,6 +50,24 @@ class Skin extends \Branch\Singleton {
 		load_theme_textdomain($this->name(), $this->dir() . '/languages');
 		
 		return $this;
+	}
+	
+	public function enqueue_scripts() {
+		if(empty($this->config()['scripts'])) return;
+		
+		foreach($this->config()['scripts'] as $script) {
+			wp_deregister_script( $script['handle'] );
+			wp_enqueue_script( $script['handle'], $script['src'], $script['deps'] );
+		}
+	}
+	
+	public function enqueue_styles() {
+		if(empty($this->config()['styles'])) return;
+		
+		foreach($this->config()['styles'] as $style) {
+			wp_deregister_style( $style['handle'] );
+			wp_enqueue_style( $style['handle'], $style['src'], $style['deps'] );
+		}
 	}
 	
 	private function templates() {
@@ -405,7 +429,7 @@ class Skin extends \Branch\Singleton {
 			}
 			
 			usort($config_files, function($a, $b){
-				return ($a['modified'] > $b['modified']);
+				return ($a['modified'] < $b['modified']);
 			});
 			
 			$this->config_files = $config_files;
