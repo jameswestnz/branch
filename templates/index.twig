@@ -1,0 +1,27 @@
+{% extends "views/layout.twig" %}
+
+{% block content %}
+    {% embed 'views/wrapper.twig' %}
+		{% block content %}
+			{% if have_posts() %}
+				{% if is_home() and not is_front_page() %}
+					<header>
+						<h1 class="page-title screen-reader-text">{{single_post_title()}}</h1>
+					</header>
+				{% endif %}
+				
+				{% for post in posts %}
+					{% include ['views/content-'~post.post_type~'.twig', 'views/content.twig'] %}
+				{% endfor %}
+				
+				{{paginate_links({
+					'prev_text'          : __( 'Previous page', 'branch' ),
+					'next_text'          : __( 'Next page', 'branch' ),
+					'before_page_number' : '<span class="meta-nav screen-reader-text">' ~ __( 'Page', 'branch' ) ~ ' </span>'
+				})}}
+			{% else %}
+				{% include ['views/content-none.twig', '404.twig'] %}
+			{% endif %}
+		{% endblock %}
+    {% endembed %}
+{% endblock %}

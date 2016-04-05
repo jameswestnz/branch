@@ -1,0 +1,11 @@
+{% extends "views/layout.twig" %}
+
+{% block content %}
+    {% embed 'views/wrapper.twig' %}
+		{% block content %}
+			<div class="container content-wrapper">
+			{{content}}
+			</div> <!-- /content-wrapper -->
+		{% endblock %}
+    {% endembed %}
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "views/layout.twig" %}
+
+{% block content %}
+    {% embed 'views/wrapper.twig' %}
+		{% block content %}
+			<h1>Sorry, we couldn't find what you're looking for.</h1>
+		{% endblock %}
+    {% endembed %}
+{% endblock %}

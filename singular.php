@@ -12,9 +12,9 @@ $post = new TimberPost();
 $context['post'] = $post;
 
 if(post_password_required($post->ID)) {
-	Timber::render('singular-protected.twig', $context);
+	Timber::render('templates/singular-protected.twig', $context);
 } else {
-	$templates = array('singular.twig', 'index.twig');
+	$templates = array('templates/singular.twig', 'templates/index.twig');
 	
 	if(is_attachment()) {
 		if ( false !== strpos( $post->post_mime_type, '/' ) ) {
@@ -23,17 +23,17 @@ if(post_password_required($post->ID)) {
 			list( $type, $subtype ) = array( $post->post_mime_type, '' );
 		}
 		
-		array_unshift($templates, 'attachment.twig', 'single-attachment.twig', 'single.twig');
+		array_unshift($templates, 'templates/attachment.twig', 'templates/single-attachment.twig', 'templates/single.twig');
 		
 		if ( ! empty( $subtype ) ) {
-			array_unshift($templates, "{$type}.twig", "{$subtype}.twig", "{$type}_{$subtype}.twig");
+			array_unshift($templates, "templates/{$type}.twig", "templates/{$subtype}.twig", "templates/{$type}_{$subtype}.twig");
 		}
 	} else if(is_post_type_archive()) {
-		array_unshift($templates, 'single-' . $post->post_type . '.twig', 'single.twig');
+		array_unshift($templates, 'templates/single-' . $post->post_type . '.twig', 'templates/single.twig');
 	} else if(is_single()) {
-		array_unshift($templates, 'single-' . $post->ID . '.twig', 'single-' . $post->post_type . '.twig', 'single.twig');
+		array_unshift($templates, 'templates/single-' . $post->ID . '.twig', 'templates/single-' . $post->post_type . '.twig', 'templates/single.twig');
 	} else if(is_page()) {
-		array_unshift($templates, 'page-' . $post->post_name . '.twig', 'page-' . $post->ID . '.twig', 'page.twig');
+		array_unshift($templates, 'templates/page-' . $post->post_name . '.twig', 'templates/page-' . $post->ID . '.twig', 'templates/page.twig');
 		
 		if($page_template = $post->_wp_page_template) array_unshift($templates, $page_template);
 	}

@@ -8,4 +8,4 @@
  */
 
 $context = Timber::get_context();
-Timber::render('comments-popup.twig', $context);
+Timber::render('templates/comments-popup.twig', $context);

@@ -8,4 +8,4 @@
  */
 
 $context = Timber::get_context();
-Timber::render('404.twig', $context);
+Timber::render('templates/404.twig', $context);
