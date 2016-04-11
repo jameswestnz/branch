@@ -1,2 +1,5 @@
 .DS_Store
+skins/*
+!skins/.empty
+lib/vendor/jarednova/timber-library/cache
 vendor/

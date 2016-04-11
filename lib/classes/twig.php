@@ -30,23 +30,10 @@ class Twig extends \Branch\Singleton {
 	 * @return void
 	 */
 	public function modify_twig($twig){
-		$allowed_internal_methods = array(
-			'sprintf',
-			'in_array',
-			'htmlspecialchars'
-		);
 		
 		// allow all "user" functions, essentially any public function in the wordpress scope.
 		// We're saying no to "internal" PHP functions as they shouldn't be needed, and potentially dangerous
-		$twig->registerUndefinedFunctionCallback(function($name) use ($allowed_internal_methods){
-			$allowed = array_merge($allowed_internal_methods, get_defined_functions()['user']);
-			
-		    if (in_array($name, $allowed)) {
-		        return new \Twig_Function_Function($name);
-		    }
-    
-			return false;
-		});
+		$twig->registerUndefinedFunctionCallback(array('Branch\Twig', 'filter_undefined_functions'));
         
         // custom functions
 		$twig->addFunction(new \Twig_SimpleFunction('get_comment_time', function ($comment_id) {
@@ -62,7 +49,7 @@ class Twig extends \Branch\Singleton {
 			return $matches[1];
         }));
         
-		$twig->addFunction(new \Twig_SimpleFunction('get_sidebar', function ($index) {
+		$twig->addFunction(new \Twig_SimpleFunction('sidebar', function ($index) {
 			return \Branch\Twig::get_sidebar($index);
         }));
         
@@ -73,7 +60,7 @@ class Twig extends \Branch\Singleton {
         }));
         
 		$twig->addFunction(new \Twig_SimpleFunction('get_asset_uri', function ($uri) {
-			return \Branch\Skin::instance()->uri() . $uri;
+			return \Branch\Theme::instance()->get_asset_uri($uri);
         }));
         
 		$twig->addFunction(new \Twig_SimpleFunction('get_menu', function ($location) {
@@ -102,8 +89,54 @@ class Twig extends \Branch\Singleton {
 		}
 		return false;
 	}
+	
+	static function function_is_allowed($name) {
+		$allowed_internal_methods = array(
+			'sprintf',
+			'in_array',
+			'htmlspecialchars'
+		);
+		
+		$allowed = array_merge($allowed_internal_methods, get_defined_functions()['user']);
+		
+		return in_array($name, $allowed);
+	}
+	
+	static function filter_undefined_functions($name) {
+		$args = func_get_args();
+		array_shift( $args );
+		
+	    if (Twig::function_is_allowed($name)) {
+		    $function = new \Twig_SimpleFunction($name, function() use ($name){
+			    return call_user_func_array($name, func_get_args());
+		    });
+		    $function->setArguments($args);
+	        return $function;
+	    }
+
+		return false;
+	}
 }
 
 // need more control over what goes on in TimberTwig... lets extend and hijack
 class TimberTwig extends \TimberTwig {
+	/**
+	 *
+	 *
+	 * @param string  $function_name
+	 * @return mixed
+	 */
+	function exec_function( $function_name ) {
+		$args = func_get_args();
+		array_shift( $args );
+		if ( is_string($function_name) ) {
+			$function_name = trim( $function_name );
+		}
+		
+		if(!Twig::function_is_allowed($function_name) || !is_callable($function_name)) {
+			return false;
+		}
+		
+		return call_user_func_array( $function_name, ( $args ) );
+	}
 }

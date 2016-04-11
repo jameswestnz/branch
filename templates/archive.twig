@@ -5,21 +5,6 @@
 		{% block content %}
 			{% if have_posts() %}
 				<div class="content-wrapper">
-					{% if post %}
-					<article class="post-type-{{post.post_type}}" id="post-{{post.ID}}">
-						<section class="article-content">
-							<h1 class="article-h1">{{post.title}}</h1>
-			
-							{% if not is_paged() %}
-							<div class="article-body">
-								{{post.content}}
-							</div>
-							{% endif %}
-						</section>
-			
-					</article>
-					{% endif %}
-					
 					{% for post in posts %}
 						{% include ['views/content-'~post.post_type~'.twig', 'views/content.twig'] %}
 					{% endfor %}
